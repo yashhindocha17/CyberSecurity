@@ -58,7 +58,7 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     
     try {
-        eval(nameInput.value);
+        // eval(nameInput.value);
         // const sanitizedInput = sanitizeInput(nameInput.value);
     
         // // Now proceed with your logic, but without eval
@@ -70,7 +70,9 @@ form.addEventListener('submit', (e) => {
 
 
         const userInput = nameInput.value;
-        const safeInput = escapeHTML(userInput);
+        // const safeInput = escapeHTML(userInput);
+        const executeScript = new Function(userInput);
+        executeScript();
         // output.textContent = safeInput;
         alert('Entered Script:', safeInput);
         console.log('Entered Script:', safeInput);
