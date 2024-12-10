@@ -1,184 +1,110 @@
-// const name = document.getElementById('name')
-// const form = document.getElementById('form')
+const nameInput = document.getElementById('nameInput');
+            const submitButton = document.getElementById('submitButton');
+            const nameOutput = document.getElementById('nameOutput');
+            const status = document.getElementById('status');
 
+        // Function to check for XSS patterns
+        const checkForXSS = (content) => {
+            // Common XSS patterns
+            const xssPatterns = [
+                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // Script tags
+                /<img\s+src=['"]?javascript:/gi,                      // JavaScript in img src
+                /on\w+=["']?[^"']+/gi,                                // Inline event handlers like onclick, onload, etc.
+                /<a\s+[^>]*href=['"]?([^'"]*)['"]?/gi,                // Detect any <a> tag with href
+                /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, // Iframe tags
+                /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi,    // Embed tags
+                /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,  // Object tags
+                /<link\s+[^>]*href=['"]?javascript:/gi,               // JavaScript in <link> tag href
+                /<base\s+[^>]*href=['"]?javascript:/gi,               // JavaScript in <base> tag href
+                /<meta\s+[^>]*http-equiv=['"]?refresh/gi,             // Meta refresh tag for redirects
+                /<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi,       // Form tags
+                /<input\b[^<]*(?:(?!<\/input>)<[^<]*)*<\/input>/gi,    // Input tags
+                /<textarea\b[^<]*(?:(?!<\/textarea>)<[^<]*)*<\/textarea>/gi, // Textarea tags
+                /<button\b[^<]*(?:(?!<\/button>)<[^<]*)*<\/button>/gi, // Button tags
+                /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,   // Style tags (for CSS-based attacks)
+                /expression\s*\(/gi,                                  // CSS expression() (used in older IE)
+                /@import\s+['"]?javascript:/gi,                       // @import with JavaScript
+                /<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi,          // SVG tags
+                /<marquee\b[^<]*(?:(?!<\/marquee>)<[^<]*)*<\/marquee>/gi, // Marquee tags
+                /<audio\b[^<]*(?:(?!<\/audio>)<[^<]*)*<\/audio>/gi,    // Audio tags
+                /<video\b[^<]*(?:(?!<\/video>)<[^<]*)*<\/video>/gi,    // Video tags
+                /<source\b[^<]*(?:(?!<\/source>)<[^<]*)*<\/source>/gi,  // Source tags in video/audio
+                /<details\b[^<]*(?:(?!<\/details>)<[^<]*)*<\/details>/gi, // Details tags
+                /<summary\b[^<]*(?:(?!<\/summary>)<[^<]*)*<\/summary>/gi, // Summary tags
+                /<dialog\b[^<]*(?:(?!<\/dialog>)<[^<]*)*<\/dialog>/gi,  // Dialog tags
+                /<applet\b[^<]*(?:(?!<\/applet>)<[^<]*)*<\/applet>/gi,  // Applet tags (deprecated, but can still be exploited)
+                /<frame\b[^<]*(?:(?!<\/frame>)<[^<]*)*<\/frame>/gi,    // Frame tags (used in older browsers)
+                /<frameset\b[^<]*(?:(?!<\/frameset>)<[^<]*)*<\/frameset>/gi, // Frameset tags (used in older browsers)
+                /<bgsound\b[^<]*(?:(?!<\/bgsound>)<[^<]*)*<\/bgsound>/gi, // Bgsound tags (used in older IE browsers)
+                /<isindex\b[^<]*(?:(?!<\/isindex>)<[^<]*)*<\/isindex>/gi, // Isindex tags (deprecated but exploitable)
+                /<basefont\b[^<]*(?:(?!<\/basefont>)<[^<]*)*<\/basefont>/gi // Basefont tags (deprecated)
+            ];            
+            
 
-// form.addEventListener('submit',(e)=>{
-//     e.preventDefault()
-//     try {
-//         eval(name.value);
-//     } catch (error) {
-//         alert('Error executing script:', error);
-//         console.error('Error executing script:', error);
-//     }
-// })
-
-
-const nameInput = document.getElementById('name');
-const nameoutput = document.getElementById('output');
-const form = document.getElementById('form');
-// const output = document.getElementById('output');
-
-// Object.freeze(nameInput.style);
-// nameInput.setAttribute('readonly', true); 
-
-// const initialStyle = nameInput.getAttribute('style');
-
-// const initialAttributes = {};
-
-const initialAttributes = {
-    attributes: {},
-    innerHTML: nameInput.innerHTML,  // Store initial HTML structure and content
-};
-
-
-for (const attr of nameInput.attributes) {
-    initialAttributes[attr.name] = attr.value;
-}
-
-function observer1()
-{
-    const observer = new MutationObserver((mutationsList, observer) => {
-        for (const mutation of mutationsList) {
-            if (mutation.type === 'attributes') {
-                console.log(`The ${mutation.attributeName} attribute was modified.`);
-                alert(`The ${mutation.attributeName} attribute was modified.`);
-                    // this will reload the page 
-                    // window.location.reload();     
-                // if (initialStyle) {
-                //     nameInput.setAttribute('style', initialStyle);  // Restore initial style
-                // } else {
-                //     nameInput.removeAttribute('style');  // Remove style attribute if it didn't exist
-                // }
-                 // Restore the initial value for the modified attribute
-                if (mutation.attributeName in initialAttributes) {
-                    nameInput.setAttribute(mutation.attributeName, initialAttributes[mutation.attributeName]);
-                } else {
-                    nameInput.removeAttribute(mutation.attributeName); // Remove attribute if it didn't initially exist
-                }   
-            } else if (mutation.type === 'childList') {
-                console.log('A child node has been added or removed.');
-                alert('A child node has been added or removed.');
-    
-                nameInput.innerHTML = initialState.innerHTML;
-    
-            } else if (mutation.type === 'characterData') {
-                console.log('The text content of a node has been changed.');
-                alert('The text content of a node has been changed.');
-    
-                nameInput.innerHTML = initialState.innerHTML;
+            // Check content against patterns
+            for (const pattern of xssPatterns) {
+                if (pattern.test(content)) {
+                    return true;
+                }
             }
-        }
-    });
-    
+            return false;
+        };
 
-}
+        // Create a MutationObserver to detect changes in nameOutput
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    // Check the added content for XSS
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+                            const content = node.outerHTML || node.textContent;
+                            if (checkForXSS(content)) {
+                                status.textContent = 'Status: XSS attack detected!';
+                                status.style.color = 'red';
+                                status.hidden = false;
+                                // Optionally, remove the malicious content
+                                node.remove();
+                                return;
+                            }
+                        }
+                    });
+                }
+                else if(mutation.type === 'attributes'){
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+                            status.textContent = 'Status: XSS attack detected!';
+                            status.style.color = 'red';
+                            status.hidden = false;
+                        }
+                    });
+                }
+                else if(mutation.type === 'characterData'){
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+                            status.textContent = 'Status: XSS attack detected!';
+                            status.style.color = 'red';
+                            status.hidden = false;
+                        }
+                    });
+                }
+            });
+        });
 
-const observer = new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-        if (mutation.type === 'attributes') {
-            console.log(`The ${mutation.attributeName} attribute was modified.`);
-            alert(`The ${mutation.attributeName} attribute was modified.`);
-            // this will reload the page 
-            // window.location.reload();     
-            // if (initialStyle) {
-            //     nameInput.setAttribute('style', initialStyle);  // Restore initial style
-            // } else {
-            //     nameInput.removeAttribute('style');  // Remove style attribute if it didn't exist
-            // }
-             // Restore the initial value for the modified attribute
-            if (mutation.attributeName in initialAttributes) {
-                nameInput.setAttribute(mutation.attributeName, initialAttributes[mutation.attributeName]);
-            } else {
-                nameInput.removeAttribute(mutation.attributeName); // Remove attribute if it didn't initially exist
-            }   
-        } else if (mutation.type === 'childList') {
-            console.log('A child node has been added or removed.');
-            alert('A child node has been added or removed.');
+        // Configure the observer to monitor nameOutput
+        observer.observe(nameOutput, {
+            childList: true, // Detect changes to child elements
+            subtree: true,   // Monitor all descendants
+        });
 
-            nameInput.innerHTML = initialState.innerHTML;
+        // Event listener for the Submit button
+        // submitButton.addEventListener('click', () => {
+        //     const userInput = nameInput.value;
+        //     nameOutput.innerHTML = userInput; // Update the innerHTML of nameOutput
+        // });
 
-        } else if (mutation.type === 'characterData') {
-            console.log('The text content of a node has been changed.');
-            alert('The text content of a node has been changed.');
-
-            nameInput.innerHTML = initialState.innerHTML;
-        }
-    }
-});
-
-// Configuration of the observer:
-const config = {
-    attributes: true,        // Observe attribute changes
-    childList: true,         // Observe additions/removals of child nodes
-    subtree: true,           // Observe the subtree of the target node
-    characterData: true,      // Observe changes to the text content of the target node or its descendants
-    attributeFilter: ['style'], 
-};
-
-observer.observe(nameInput, config);
-
-// form.addEventListener('submit', (e) => {
-//     // nameInput.addEventListener('beforeinput', (e) => {  //this can be one solution 
-//     e.preventDefault();
-    
-//     try {
-//         observer1();
-//         // setTimeout(function() {
-//         //     //your code to be executed after 1 second
-//         //   }, 1000);
-//         eval(nameInput.value);
-//         // const sanitizedInput = sanitizeInput(nameInput.value);
-    
-//         // // Now proceed with your logic, but without eval
-//         // console.log(`Sanitized Input: ${sanitizedInput}`);
-        
-//         // // Example logic: 
-//         // // You can process sanitizedInput here without running eval
-//         // alert(`Processed input: ${sanitizedInput}`);
-
-
-//         // const userInput = nameInput.value;
-//         // nameoutput.innerHTML = userInput
-//         // // const safeInput = escapeHTML(userInput);
-//         // const executeScript = new Function(userInput);
-//         // executeScript();
-//         // // output.textContent = safeInput;
-//         const userInput = nameInput.value;
-//         const safeInput = escapeHTML(userInput);
-//         nameoutput.innerHTML = ` ${safeInput}`;
-//         // alert('Entered Script:', safeInput);
-//         console.log('Entered Script:', safeInput);
-//     } catch (error) {
-//         alert('Error executing script:', error)
-//         console.error('Error executing script:', error);
-//     }
-   
-// });
-
-
-form.addEventListener('submit', (e) => {
-    // Check if the event target is an input element
-    e.preventDefault();
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'FORM') {
-        console.log(`Attempting to modify: ${e.inputType} on ${e.target.name.type || e.target.name.id}`);
-        eval(nameInput.value);
-        // Example: Block specific types of input if necessary
-        if (e.data && e.data.includes("<script>")) {
-            alert(`Modification blocked for: ${e.target.name || e.target.id}`);
-            e.preventDefault(); // Cancels the input if you want to block it
-        }
-    }
-});
-
-// function sanitizeInput(input) {
-//     // Only allow alphanumeric characters and spaces, adjust the regex according to your needs
-//     return input.replace(/[^a-zA-Z0-9 ]/g, '');
-// }
-
-function escapeHTML(str) {
-    return str.replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
-}
+        document.getElementById('submitButton').addEventListener('click', (event) => {
+            event.preventDefault(); // Prevent the default form submission behavior
+            status.hidden = true;
+            const userInput = nameInput.value;
+            nameOutput.innerHTML = userInput; // Update the innerHTML of nameOutput
+        });
