@@ -59,7 +59,7 @@ const nameInput = document.getElementById('nameInput');
                         if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
                             const content = node.outerHTML || node.textContent;
                             if (checkForXSS(content)) {
-                                status.textContent = 'Status: XSS attack detected!';
+                                status.textContent = 'XSS attack detected!';
                                 status.style.color = 'red';
                                 status.hidden = false;
                                 // Optionally, remove the malicious content
@@ -72,16 +72,16 @@ const nameInput = document.getElementById('nameInput');
                 else if(mutation.type === 'attributes'){
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
-                            status.textContent = 'Status: XSS attack detected!';
+                            status.textContent = 'XSS attack detected!';
                             status.style.color = 'red';
                             status.hidden = false;
                         }
                     });
-                }
+                }   
                 else if(mutation.type === 'characterData'){
                     mutation.addedNodes.forEach((node) => {
                         if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
-                            status.textContent = 'Status: XSS attack detected!';
+                            status.textContent = 'XSS attack detected!';
                             status.style.color = 'red';
                             status.hidden = false;
                         }
